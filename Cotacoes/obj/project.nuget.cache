@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "dgSpecHash": "wQC96TyiaNU/hd4zc7Rj0ILYl1Y+mLoxwKU135QX6vXiAuCpohPW9sq67dBk1NMsP6r0wbZ4loGGYVBC7A9nWg==",
+  "success": true,
+  "projectFilePath": "/home/matheus/Codigos/inoa/terminal/Cotacoes/Cotacoes.csproj",
+  "expectedPackageFiles": [
+    "/home/matheus/.nuget/packages/google.apis/1.62.0/google.apis.1.62.0.nupkg.sha512",
+    "/home/matheus/.nuget/packages/google.apis.auth/1.62.0/google.apis.auth.1.62.0.nupkg.sha512",
+    "/home/matheus/.nuget/packages/google.apis.core/1.62.0/google.apis.core.1.62.0.nupkg.sha512",
+    "/home/matheus/.nuget/packages/google.apis.sheets.v4/1.62.0.3148/google.apis.sheets.v4.1.62.0.3148.nupkg.sha512",
+    "/home/matheus/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
