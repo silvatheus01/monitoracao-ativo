@@ -10,10 +10,20 @@ public class Courier{
 
     public Courier(string asset){
         Asset = asset;
-        string text = File.ReadAllText(pathConfigFile);
-        var config = JsonSerializer.Deserialize<EmailConfig>(text);
-        if(config != null) Config = config;
-        else throw new Exception("Não foi possível ler o arquivo de configuração.");
+        Config = GetConfig();
+    }
+
+    private EmailConfig GetConfig(){
+        string errorMsg = "A configuração de envio de email não estão disponível.";
+        try{
+            string text = File.ReadAllText(pathConfigFile);
+            var config = JsonSerializer.Deserialize<EmailConfig>(text);
+            if(config != null) return config;
+            else throw new Exception(errorMsg);
+        }
+        catch (Exception){
+            throw new Exception(errorMsg);
+        }       
     }
 
     public void SendEmailForSale(float currentPrice){

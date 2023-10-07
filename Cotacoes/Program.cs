@@ -1,11 +1,11 @@
-﻿
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Cotacoes{
     class Program{
         static void Main(string[] args){
             if(args.Length != 3){
-                Console.WriteLine("Parâmetros inválidos: Entre com o ativo a ser monitorado, "
+                Console.WriteLine(
+                    "Parâmetros inválidos: Entre com o ativo a ser monitorado, "
                     + "o preço de referência para venda e " 
                     + "o preço de referência para compra."
                 );
@@ -22,11 +22,11 @@ namespace Cotacoes{
                 return;
             }
             
-            string assetName = args[0];
-            Asset asset = new(assetName);
-            Courier courier = new(assetName);
-
             try{
+                string assetName = args[0];
+                Asset asset = new(assetName);
+                Courier courier = new(assetName);
+
                 bool salesNoticeSent = false;
                 bool purchaseNoticeSent = false;
 
@@ -57,6 +57,8 @@ namespace Cotacoes{
             }catch(KeyNotFoundException e){
                 Console.WriteLine(e.Message);
             }catch(FormatException e){
+                Console.WriteLine(e.Message);
+            }catch(Exception e){
                 Console.WriteLine(e.Message);
             }            
         }
