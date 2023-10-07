@@ -3,6 +3,9 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
 using System.Globalization;
+using MailKit.Net.Smtp;
+using MimeKit;
+using System.Text.Json;
 
 namespace Cotacoes{
     class Program{
@@ -10,7 +13,7 @@ namespace Cotacoes{
         static readonly string ApplicationName = "InoaPs";
         static readonly string sheet = "pagina";
         static readonly string SpreadsheetId = "1uypMIKinfs1VS8p2U6y-zzQqqnrPfPkc6V-WTOc1CyI";
-        static SheetsService service;
+        static SheetsService service = new();
 
         static void Main(string[] args){
             Init();
@@ -36,14 +39,29 @@ namespace Cotacoes{
 
             try{
                 int rowIndex = FindAssetRow(asset);
+                bool salesNoticeSent = false;
+                bool purchaseNoticeSent = false;
+
                 while(true){
                     float price = GetPriceAsset(rowIndex);
                     if(refPriceSale < price){
                         Console.WriteLine($"({asset}) Preço: {price} | Agora é o momento de vender.");
+                        if(!salesNoticeSent){
+                            SendEmail(asset, price, true);
+                            salesNoticeSent = true;
+                            purchaseNoticeSent = false;
+                        } 
                     }else if(refPricePurchase > price){
                         Console.WriteLine($"({asset}) Preço: {price} | Agora é o momento de comprar.");
+                        if(!purchaseNoticeSent){
+                            SendEmail(asset, price, false);
+                            purchaseNoticeSent = true;
+                            salesNoticeSent = false;
+                        }
                     }else{
-                        Console.WriteLine($"({asset}) Preço: {price}");
+                        Console.WriteLine($"({asset}) Preço: {price}");  
+                        salesNoticeSent = false;
+                        purchaseNoticeSent = false;                      
                     }
 
                     Thread.Sleep(1000);
@@ -53,6 +71,47 @@ namespace Cotacoes{
             }catch(FormatException e){
                 Console.WriteLine(e.Message);
             }            
+        }
+
+        static void SendEmail(
+            string asset, 
+            float currentPrice, 
+            bool isSale
+        ){
+            string text = File.ReadAllText("../email_config.json");
+            var config = JsonSerializer.Deserialize<EmailConfig>(text);
+            
+            if(config != null){
+                var email = new MimeMessage();
+                email.From.Add(new MailboxAddress(config.Sender, config.From));
+                email.To.Add(new MailboxAddress(config.Receiver, config.To));
+
+                email.Subject = "Alerta de preço";
+                string body;
+                if(isSale){
+                    body = $"O preço de <b>{asset}</b> é de <b>{currentPrice}</b>. Esse é o momento de vender.";
+                }else{
+                    body = $"O preço de <b>{asset}</b> é de <b>{currentPrice}</b>. Esse é o momento de comprar.";
+                }
+
+                email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { 
+                    Text = body
+                };
+                
+                using var smtp = new SmtpClient();
+                smtp.Connect(config.Server, config.Port, false);
+
+                // Note: only needed if the SMTP server requires authentication
+                string username = config.Username;
+                string password = config.Password;
+                if(username != string.Empty && password != string.Empty){
+                    smtp.Authenticate(config.Username, config.Password);
+                }
+                    
+                smtp.Send(email);
+                smtp.Disconnect(true);
+            }
+            
         }
 
         static void Init(){
@@ -81,7 +140,7 @@ namespace Cotacoes{
             IList<IList<object>> values = GetValues(range);
 
             string tempPrice = (string) values[0][0];
-            float price = 0;
+            float price;
             try{
                 price = Single.Parse(tempPrice);
             }catch(FormatException){
@@ -109,6 +168,3 @@ namespace Cotacoes{
         }   
     }
 }
-
-
-
