@@ -1,7 +1,4 @@
 ﻿
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
@@ -17,7 +14,15 @@ namespace Cotacoes{
 
         static void Main(string[] args){
             Init();
-            ReadSheet();
+            try{
+                int rowIndex = FindAssetRow("SOND3");
+                float price = GetPriceAsset(rowIndex);
+                Console.WriteLine(price);
+            }catch(KeyNotFoundException e){
+                Console.WriteLine(e.Message);
+            }catch(FormatException e){
+                Console.WriteLine(e.Message);
+            }            
         }
 
         static void Init(){
@@ -32,29 +37,45 @@ namespace Cotacoes{
                 HttpClientInitializer = credential,
                 ApplicationName = ApplicationName,
             });
+        }   
+
+        static IList<IList<object>> GetValues(string range){
+            SpreadsheetsResource.ValuesResource.GetRequest request =
+                service.Spreadsheets.Values.Get(SpreadsheetId, range);
+            var response = request.Execute();
+            return response.Values;
         }
 
-        static void ReadSheet(){
-            // Specifying Column Range for reading...
-            var range = $"{sheet}!A:E";
-            SpreadsheetsResource.ValuesResource.GetRequest request =
-                    service.Spreadsheets.Values.Get(SpreadsheetId, range);
-            // Ecexuting Read Operation...
-            var response = request.Execute();
-            // Getting all records from Column A to E...
-            IList<IList<object>> values = response.Values;
-            if (values != null && values.Count > 0)
-            {
-                foreach (var row in values)
-                {
-                    // Writing Data on Console...
-                    Console.WriteLine("{0} | {1}", row[0], row[1]);
+        static float GetPriceAsset(int rowIndex){
+            string range = $"{sheet}!B{rowIndex}:B{rowIndex}";
+            IList<IList<object>> values = GetValues(range);
+
+            string tempPrice = (string) values[0][0];
+            float price = 0;
+            try{
+                price = Single.Parse(tempPrice);
+            }catch(FormatException){
+                throw new FormatException("Não possível retornar o preço do ativo");
+            }
+        
+            return price;
+        }
+
+        static int FindAssetRow(string asset){
+            var range = $"{sheet}!A:A";
+            IList<IList<object>> values = GetValues(range);
+            int numLines = values.Count;
+
+            if (values != null && numLines > 0){
+                for(int i = 0; i < numLines; i++){
+                   var tempAsset = values[i][0];
+                   if(asset.CompareTo(tempAsset) == 0){
+                    return i+1;
+                   }
                 }
             }
-            else
-            {
-                Console.WriteLine("No data found.");
-            }
+            
+            throw new KeyNotFoundException("Não foi possível encontrar o ativo.");
         }   
     }
 }
