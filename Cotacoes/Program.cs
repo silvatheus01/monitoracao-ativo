@@ -2,22 +2,52 @@
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
 using Google.Apis.Sheets.v4;
-using Google.Apis.Sheets.v4.Data;
+using System.Globalization;
 
 namespace Cotacoes{
     class Program{
         static readonly string[] Scopes = { SheetsService.Scope.Spreadsheets };
-        static readonly string ApplicationName = "Dot Tutorials";
+        static readonly string ApplicationName = "InoaPs";
         static readonly string sheet = "pagina";
         static readonly string SpreadsheetId = "1uypMIKinfs1VS8p2U6y-zzQqqnrPfPkc6V-WTOc1CyI";
         static SheetsService service;
 
         static void Main(string[] args){
             Init();
+            if(args.Length != 3){
+                Console.WriteLine("Parâmetros inválidos: Entre com o ativo a ser monitorado, "
+                    + "o preço de referência para venda e " 
+                    + "o preço de referência para compra."
+                );
+                return;
+            }
+
+            float refPriceSale, refPricePurchase;
             try{
-                int rowIndex = FindAssetRow("SOND3");
-                float price = GetPriceAsset(rowIndex);
-                Console.WriteLine(price);
+                refPriceSale = float.Parse(args[1], CultureInfo.InvariantCulture);
+                refPricePurchase = float.Parse(args[2], CultureInfo.InvariantCulture);
+            }
+            catch (FormatException){
+                Console.WriteLine("Os parâmetros são inválidos.");
+                return;
+            }
+
+            string asset = args[0];
+
+            try{
+                int rowIndex = FindAssetRow(asset);
+                while(true){
+                    float price = GetPriceAsset(rowIndex);
+                    if(refPriceSale < price){
+                        Console.WriteLine($"({asset}) Preço: {price} | Agora é o momento de vender.");
+                    }else if(refPricePurchase > price){
+                        Console.WriteLine($"({asset}) Preço: {price} | Agora é o momento de comprar.");
+                    }else{
+                        Console.WriteLine($"({asset}) Preço: {price}");
+                    }
+
+                    Thread.Sleep(1000);
+                }
             }catch(KeyNotFoundException e){
                 Console.WriteLine(e.Message);
             }catch(FormatException e){
