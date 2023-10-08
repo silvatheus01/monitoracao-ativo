@@ -4,7 +4,7 @@ using Google.Apis.Sheets.v4;
 
 public class Asset
 { 
-    public float Price {
+    public Price Price {
         get{
             return GetPrice(RowIndex);
         }
@@ -14,6 +14,7 @@ public class Asset
     static readonly private string pathCredentialsFile = "../app_client_secret.json";
     static readonly private string assetColumn = "A";
     static readonly private string priceColumn = "B";
+    static readonly private string dateColumn = "C";
     static readonly private string[] Scopes = { SheetsService.Scope.Spreadsheets };
     static readonly private string ApplicationName = "InoaPs";
     static readonly private string sheet = "pagina";
@@ -46,18 +47,21 @@ public class Asset
         return response.Values;
     }
 
-    private float GetPrice(int rowIndex){
-        string range = $"{sheet}!{priceColumn}{rowIndex}:{priceColumn}{rowIndex}";
+    private Price GetPrice(int rowIndex){
+        string range = $"{sheet}!{priceColumn}{rowIndex}:{dateColumn}{rowIndex}";
         IList<IList<object>> values = GetValues(range);
 
-        string tempPrice = (string) values[0][0];
-        float price;
+        string tempValue = (string) values[0][0];
+        float value;
         try{
-            price = Single.Parse(tempPrice);
+            value = Single.Parse(tempValue);
         }catch(FormatException){
             throw new FormatException("Não possível retornar o preço do ativo");
         }
-    
+
+        string date = (string) values[0][1];
+        Price price = new(date, value);
+        
         return price;
     }
 

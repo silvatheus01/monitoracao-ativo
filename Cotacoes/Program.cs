@@ -2,15 +2,53 @@
 
 namespace Cotacoes{
     class Program{
-        static void Main(string[] args){
+
+        static void CheckNumArgs(string[] args){
             if(args.Length != 3){
                 Console.WriteLine(
                     "Parâmetros inválidos: Entre com o ativo a ser monitorado, "
                     + "o preço de referência para venda e " 
                     + "o preço de referência para compra."
                 );
-                return;
+                Environment.Exit(1);
             }
+        }
+
+        static void PrintSalesMessage(string date, string asset, float value){
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine($"[{date}]({asset}) Preço: {value} | Agora é o momento de vender.");
+            Console.ResetColor();
+        }
+
+        static void PrintPurchaseMessage(string date, string asset, float value){
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.WriteLine($"[{date}]({asset}) Preço: {value} | Agora é o momento de comprar.");
+            Console.ResetColor();
+        }
+
+        static void PrintMessage(string date, string asset, float value){
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write($"[{date}]");
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.Write($"({asset}) ");
+
+            Console.ResetColor();
+            Console.WriteLine($"Preço: {value}.");
+        }
+
+        static void ClearTerminal(){
+            Console.Clear();
+        }
+
+        static void Wait(){
+            Thread.Sleep(2000);
+        }
+
+        static void Main(string[] args){
+            
+            CheckNumArgs(args);
 
             float refPriceSale, refPricePurchase;
             try{
@@ -21,6 +59,8 @@ namespace Cotacoes{
                 Console.WriteLine("Os parâmetros são inválidos.");
                 return;
             }
+
+            ClearTerminal();
             
             try{
                 string assetName = args[0];
@@ -31,28 +71,31 @@ namespace Cotacoes{
                 bool purchaseNoticeSent = false;
 
                 while(true){
-                    float price = asset.Price;
-                    if(refPriceSale < price){
-                        Console.WriteLine($"({assetName}) Preço: {price} | Agora é o momento de vender.");
+                    float value = asset.Price.Value;
+                    string date = asset.Price.Date;
+
+                    if(refPriceSale < value){
+                        PrintSalesMessage(date, assetName, value);
                         if(!salesNoticeSent){
-                            courier.SendEmailForSale(price);
+                            courier.SendEmailForSale(value);
                             salesNoticeSent = true;
                             purchaseNoticeSent = false;
                         } 
-                    }else if(refPricePurchase > price){
-                        Console.WriteLine($"({assetName}) Preço: {price} | Agora é o momento de comprar.");
+                    }else if(refPricePurchase > value){
+                        PrintPurchaseMessage(date, assetName, value);
                         if(!purchaseNoticeSent){
-                            courier.SendEmailForPurchase(price);
+                            courier.SendEmailForPurchase(value);
                             purchaseNoticeSent = true;
                             salesNoticeSent = false;
                         }
                     }else{
-                        Console.WriteLine($"({assetName}) Preço: {price}");  
+                        PrintMessage(date, assetName, value);
                         salesNoticeSent = false;
                         purchaseNoticeSent = false;                      
                     }
-
-                    Thread.Sleep(1000);
+                    
+                    Wait();
+                    
                 }
             }catch(KeyNotFoundException e){
                 Console.WriteLine(e.Message);
