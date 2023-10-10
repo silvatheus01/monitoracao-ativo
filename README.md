@@ -4,15 +4,15 @@ Por meio desse projeto, você será capaz de monitorar o preço de um ativo da B
 Para acessar os preços dos ativos, foi utilizada uma [planilha do google sheets](https://docs.google.com/spreadsheets/d/1uypMIKinfs1VS8p2U6y-zzQqqnrPfPkc6V-WTOc1CyI/edit#gid=0) que contém as cotações dos [ativos da B3](https://www.dadosdemercado.com.br/bolsa/acoes). 
 
 ## Configuração de envio de email
-Antes de iniciar a aplicação, você precisa criar o arquivo de configuração para o envio de email. Para isso, vá até o diretório raiz do projeto e crie um arquivo json chamado *email_config.json*. Ele deverá possuir os atributos abaixo:
+Antes de iniciar a aplicação, você precisa criar o arquivo de configuração para o envio de email. Para isso, crie um arquivo json chamado *email_config.json* dentro do diretório *Quotes*. Ele deverá possuir os seguintes campos:
 
 ```json
 {
-    "To": "email1@gmail.com",
-    "Sender" : "sender's name",
-    "From": "email2@gmail.com",
+    "To": "alice@email.com",
     "Receiver": "receiver's name",
-    "Server" : "smtp.gmail.com",
+    "From": "bob@gmail.com",
+    "Sender" : "sender's name",
+    "Server" : "smtp.email.com",
     "Port" : 123,
     "Username" : "user",
     "Password" : "pass"
@@ -25,10 +25,10 @@ Para executar a aplicação, entre com o nome do ativo a ser monitorado, o preç
 dotnet run SNSY6 33.59 33.15
 ```
 
-No exemplo acima, o usuário quer monitorar o ativo **SNSY6**, com o preço de referência para venda de **R$33,59** e o preço de referência para compra de **R$33,15**.
+No exemplo acima, o usuário quer monitorar o ativo **SNSY6**, com o preço de referência para venda de **R$33.59** e o preço de referência para compra de **R$33.15**.
 
 ### Docker
-Para executar a aplicação através de um container, execute o comando `docker compose run quotes`. Por exemplo:
+Para executar a aplicação através de um container docker, execute o comando `docker compose run quotes` com os parâmetros necessários. Por exemplo:
 
 ```console
 docker compose run quotes SNSY6 33.59 33.15
