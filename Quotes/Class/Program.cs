@@ -1,7 +1,10 @@
 ﻿using System.Globalization;
 
-namespace Cotacoes{
+namespace Quotes{
     class Program{
+
+        //In seconds
+        private static int MONITORING_FREQUENCY = 1;
 
         static void CheckNumArgs(string[] args){
             if(args.Length != 3){
@@ -14,28 +17,43 @@ namespace Cotacoes{
             }
         }
 
-        static void PrintSalesMessage(string date, string asset, float value){
+        static void CheckRefValues(Decimal salePriceRef, Decimal purchasePriceRef){
+            if(salePriceRef < purchasePriceRef){
+                Console.WriteLine(
+                    "O preço de referência para venda " 
+                    + "deve ser maior do que o preço de referência para compra."
+                );
+                Environment.Exit(1);
+            } 
+        }
+
+        static void PrintSalesMessage(string date, string asset, Decimal value){
             Console.BackgroundColor = ConsoleColor.Yellow;
             Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine($"[{date}]({asset}) Preço: {value} | Agora é o momento de vender.");
+
+            string formattedValue = Util.FormatValue(value);
+            Console.WriteLine($"[{date}]({asset}) Preço: R${formattedValue} | Agora é o momento de vender.");
             Console.ResetColor();
         }
 
-        static void PrintPurchaseMessage(string date, string asset, float value){
+        static void PrintPurchaseMessage(string date, string asset, Decimal value){
             Console.BackgroundColor = ConsoleColor.Yellow;
             Console.ForegroundColor = ConsoleColor.Black;
-            Console.WriteLine($"[{date}]({asset}) Preço: {value} | Agora é o momento de comprar.");
+
+            string formattedValue =  Util.FormatValue(value);
+            Console.WriteLine($"[{date}]({asset}) Preço: R${formattedValue} | Agora é o momento de comprar.");
             Console.ResetColor();
         }
 
-        static void PrintMessage(string date, string asset, float value){
+        static void PrintMessage(string date, string asset, Decimal value){
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write($"[{date}]");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.Write($"({asset}) ");
 
             Console.ResetColor();
-            Console.WriteLine($"Preço: {value}.");
+            string formattedValue = Util.FormatValue(value);
+            Console.WriteLine($"Preço: R${formattedValue}.");
         }
 
         static void ClearTerminal(){
@@ -43,23 +61,24 @@ namespace Cotacoes{
         }
 
         static void Wait(){
-            Thread.Sleep(2000);
+            Thread.Sleep(MONITORING_FREQUENCY*1000);
         }
 
         static void Main(string[] args){
             
             CheckNumArgs(args);
 
-            float refPriceSale, refPricePurchase;
+            Decimal refPriceSale, refPricePurchase;
             try{
-                refPriceSale = float.Parse(args[1], CultureInfo.InvariantCulture);
-                refPricePurchase = float.Parse(args[2], CultureInfo.InvariantCulture);
-            }
+                refPriceSale = Decimal.Parse(args[1], CultureInfo.InvariantCulture);
+                refPricePurchase = Decimal.Parse(args[2], CultureInfo.InvariantCulture);
+            }           
             catch (FormatException){
                 Console.WriteLine("Os parâmetros são inválidos.");
                 return;
             }
 
+            CheckRefValues(refPriceSale, refPricePurchase);
             ClearTerminal();
             
             try{
@@ -71,7 +90,7 @@ namespace Cotacoes{
                 bool purchaseNoticeSent = false;
 
                 while(true){
-                    float value = asset.Price.Value;
+                    Decimal value = asset.Price.Value;
                     string date = asset.Price.Date;
 
                     if(refPriceSale < value){

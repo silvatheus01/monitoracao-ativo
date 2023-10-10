@@ -6,7 +6,7 @@ public class Courier{
     private string Asset {get; set;}
     private EmailConfig Config {get; set;} 
 
-    static readonly private string pathConfigFile = "../email_config.json"; 
+    static readonly private string PATH_CONFIG_PATH = "./email_config.json"; 
 
     public Courier(string asset){
         Asset = asset;
@@ -16,7 +16,7 @@ public class Courier{
     private EmailConfig GetConfig(){
         string errorMsg = "A configuração de envio de email não estão disponível.";
         try{
-            string text = File.ReadAllText(pathConfigFile);
+            string text = File.ReadAllText(PATH_CONFIG_PATH);
             var config = JsonSerializer.Deserialize<EmailConfig>(text);
             if(config != null) return config;
             else throw new Exception(errorMsg);
@@ -26,15 +26,15 @@ public class Courier{
         }       
     }
 
-    public void SendEmailForSale(float currentPrice){
+    public void SendEmailForSale(Decimal currentPrice){
         SendEmail(currentPrice, true);
     }
 
-    public void SendEmailForPurchase(float currentPrice){
+    public void SendEmailForPurchase(Decimal currentPrice){
         SendEmail(currentPrice, false);
     }
 
-    private void SendEmail(float currentPrice, bool isSale){            
+    private void SendEmail(Decimal currentValue, bool isSale){            
         var email = new MimeMessage();
         email.From.Add(new MailboxAddress(Config.Sender, Config.From));
         email.To.Add(new MailboxAddress(Config.Receiver, Config.To));
@@ -42,10 +42,11 @@ public class Courier{
         email.Subject = "Alerta de preço";
         string body;
 
+        string formattedValue = Util.FormatValue(currentValue);
         if(isSale){
-            body = $"O preço de <b>{Asset}</b> é de <b>{currentPrice}</b>. Esse é o momento de vender.";
+            body = $"O preço de <b>{Asset}</b> é de <b>R${formattedValue}</b>. Esse é o momento de vender.";
         }else{
-            body = $"O preço de <b>{Asset}</b> é de <b>{currentPrice}</b>. Esse é o momento de comprar.";
+            body = $"O preço de <b>{Asset}</b> é de <b>R${formattedValue}</b>. Esse é o momento de comprar.";
         }
 
         email.Body = new TextPart(MimeKit.Text.TextFormat.Html) { 
