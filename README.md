@@ -27,6 +27,13 @@ dotnet run SNSY6 33.59 33.15
 
 No exemplo acima, o usuário quer monitorar o ativo **SNSY6**, com o preço de referência para venda de **R$33,59** e o preço de referência para compra de **R$33,15**.
 
+### Docker
+Para executar a aplicação através de um container, execute o comando `docker compose run quotes`. Por exemplo:
+
+```console
+docker compose run quotes SNSY6 33.59 33.15
+```
+
 ## Limitações
 ### Atualização de ativos
 Como os nomes dos ativos estão contidos em uma planilha, caso haja mais ativos para serem monitorados, ou algum ativo na planilha deixe de ser da B3, a planilha deve ser atualizada manualmente. 
